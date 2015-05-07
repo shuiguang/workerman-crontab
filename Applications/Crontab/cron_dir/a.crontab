@@ -1,0 +1,4 @@
+#定时任务测试a
+06 12 * * * root echo 'a' >> test.txt
+* * * * * root echo 'a' >> test.txt
+* * * * * root echo 'aa' >> test.txt

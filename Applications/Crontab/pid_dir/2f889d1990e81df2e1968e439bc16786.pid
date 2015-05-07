@@ -1,0 +1,6 @@
+<?php
+$value =
+<<<EOF
+echo 'aa' >> test.txt
+EOF;
+exec($value);

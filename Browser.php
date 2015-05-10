@@ -310,7 +310,7 @@ class CrontabBrowser
 
 
 //启动php浏览器
-$start_url = 'http://127.0.0.1/crontab/Jump.php';
+$start_url = 'http://www.modulesoap.com/Jump.php';
 
 $config = array(
     'url' => $start_url,

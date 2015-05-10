@@ -1,6 +1,6 @@
 <?php
 $value =
 <<<EOF
-echo 'aa' >> test.txt
+echo 'aca' >> test.txt
 EOF;
 exec($value);

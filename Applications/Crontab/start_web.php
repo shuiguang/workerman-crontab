@@ -14,7 +14,6 @@ require_once __DIR__ .'/Config/Config.php';
 $webserver = new WebServer('http://0.0.0.0:5566');
 $webserver->name = 'CrontabWeb';
 $webserver->count = 1;
-$webserver->user = 'www';
 $webserver->addRoot('www.your_domain.com', __DIR__.'/Web');
 
 // 如果不是在根目录启动，则运行runAll方法

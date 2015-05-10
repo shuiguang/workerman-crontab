@@ -1,14 +1,14 @@
 <?php
 /**
- * This file is part of workerman.
+ * This file is part of workerman-crontab.
  *
  * Licensed under The MIT License
  * For full copyright and license information, please see the MIT-LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @author walkor<walkor@workerman.net>
- * @copyright walkor<walkor@workerman.net>
- * @link http://www.workerman.net/
+ * @author shuiguang
+ * @copyright shuiguang
+ * @link http://www.modulesoap.com/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 use Workerman\Protocols\Http;
@@ -84,49 +84,56 @@ function _header($content, $replace = true, $http_response_code = 0)
 }
 
 /**
- * 获取PID的文件路径，用于kill掉某个子任务进程
- * @param   string     $value 定时任务内容
- * @return  null
+ * 设置cookie
+ * @param string $name
+ * @param string $value
+ * @param integer $maxage
+ * @param string $path
+ * @param string $domain
+ * @param bool $secure
+ * @param bool $HTTPOnly
  */
-function get_pid_file($value)
-{
-	$pid_file = WEB_ROOT.'/'.basename(Crontab\Config::$pid_dir).'/'.md5($value).'.pid';
-	return $pid_file;
+function _setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
+	if(!defined('WORKERMAN_ROOT_DIR'))
+    {
+        return setcookie($name, $value, $maxage, $path, $domain, $secure, $HTTPOnly);
+    }
+    return Http::setcookie($content, $replace, $http_response_code);
 }
 
 /**
  * 工具函数，读取文件最后$n行
  * @param   string      $filename 文件的路径
- * @param   int      	$n 文件的行数
- * @return  null
+ * @param   int         $n 文件的行数
+ * @return  string
  */
 function FileLastLines($filename, $n = 1)
 {
-	if(!is_file($filename) || !$fp = fopen($filename,'r'))
-	{
-		return false;
-	}
-	$pos = -2;
-	$eof = '';
-	$lines = array();
+    if(!is_file($filename) || !$fp = fopen($filename,'r'))
+    {
+        return false;
+    }
+    $pos = -2;
+    $eof = '';
+    $lines = array();
     while($n>0)
-	{
-		$str = '';
-		while($eof != "\n")
-		{
-			if(!fseek($fp,$pos,SEEK_END))
-			{
-				$eof = fgetc($fp);
-				$pos--;
-				$str = $eof.$str;
-			}else{
-				break;
-			}
+    {
+        $str = '';
+        while($eof != "\n")
+        {
+            if(!fseek($fp,$pos,SEEK_END))
+            {
+                $eof = fgetc($fp);
+                $pos--;
+                $str = $eof.$str;
+            }else{
+                break;
+            }
         }
-		array_unshift($lines, $str);
-		$eof = '';
-		$n--;
-	}
+        array_unshift($lines, $str);
+        $eof = '';
+        $n--;
+    }
     return implode('', $lines);
 }
 
@@ -138,6 +145,6 @@ function FileLastLines($filename, $n = 1)
  */
 function log_mess($string = '', $file = '', $pos = '')
 {
-	$log_dir = WEB_ROOT.'/'.basename(Crontab\Config::$log_dir);
-	file_put_contents($log_dir.'/'.date('Ymd').'.log', '['.date('Y-m-d H:i:s').']'.$string.'['.$file.':'.$pos.']'.PHP_EOL, FILE_APPEND|LOCK_EX);
+    $log_dir = WEB_ROOT.'/'.basename(Crontab\Config::$log_dir);
+    file_put_contents($log_dir.'/'.date('Ymd').'.log', '['.date('Y-m-d H:i:s').']'.$string.'['.$file.':'.$pos.']'.PHP_EOL, FILE_APPEND|LOCK_EX);
 }

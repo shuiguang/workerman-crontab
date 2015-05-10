@@ -1,6 +1,6 @@
 body, h1, h2, h3, h4, h5, h6, hr, p, blockquote, dl, dt, dd, ul, ol, li, pre, form, fieldset, legend, button, input, textarea, th, td {margin: 0;padding: 0}
 body, button, input, select, textarea {font: 12px/1.5 '微软雅黑',tahoma,arial;}
-#log_context{line-height:1.7em;width:890px; height:420px;padding:1px 5px;border:1px #888 solid}
+#log_context{line-height:1.7em;width:890px; height:400px;padding:1px 5px;border:1px #888 solid;white-space:nowrap;overflow-x:scroll}
 #con_table{table-layout:fixed;word-wrap:break-word;}
 h1, h2, h3, h4, h5, h6 {font-size: 100%;cursor:default;}
 .correct{width:14px;height:13px;padding-left:58px;display:block;background:url("data:image/gif;base64,R0lGODlhDgANALMOAP7///v1/e3t7PL59On05fj8/rm5ufj9/Nbrz/D192etapjWhI3iFmnMGP///wAAACH5BAEAAA4ALAAAAAAOAA0AAARA0MlJzwA0u7Ma0lOxMIwHciTZSMiCoWmzOEgjE128BLVqlyVFwJHzNYIJSUJxtDUVycmyidRMq6ApFDQRGASgCAA7") no-repeat;}
@@ -23,3 +23,4 @@ h1, h2, h3, h4, h5, h6 {font-size: 100%;cursor:default;}
 .button_div{width:880px;margin-left:40px;}
 .main_button{cursor:pointer;width:100px; height:25px;margin:10px 30px;}
 .con_button{cursor:pointer;float:left; margin:0 10px;width:72px;height:25px;}
+.auto_cron{background:#eee;}

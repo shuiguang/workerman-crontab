@@ -1,6 +1,0 @@
-<?php
-$value =
-<<<EOF
-php Browser.php -u http%3A%2F%2F127.0.0.1%2Fcrontab%2FJump.php
-EOF;
-exec($value);

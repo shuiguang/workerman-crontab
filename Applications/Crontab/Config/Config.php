@@ -48,9 +48,9 @@ class Config
     public static $exec_user = array('root', 'www');
     
     // 管理员用户名，用户名密码都为空字符串时说明不用验证
-    public static $adminName = 'shuiguang';
+    public static $adminName = '';
     
     // 管理员密码，用户名密码都为空字符串时说明不用验证
-    public static $adminPassword = 'shuiguang';
+    public static $adminPassword = '';
 
 }

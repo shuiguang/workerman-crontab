@@ -38,7 +38,6 @@ chown -R www:www ./Applications/test.txt
 
 ### Windows到Linux
 拷贝Crontab到官方Applications/目录下即可
-如果需要测试Browser.php案例，需要将Jump.php复制到http://IP地址/crontab/Jump.php并更改auto_Browser.crontab文件
 
 ### 与linux自带的crontab的异同
 
@@ -55,11 +54,11 @@ chown -R www:www ./Applications/test.txt
 Browser.php案例：模拟浏览器javascript翻页跳转(以下A机器B机器可处于同一服务器或不同服务器)。
 注意：CrontabWorker::$interval与浏览器的setInterval时间对应，0.1秒相当于最小间隔为100ms。
 
-A机器提供业务网址：http://127.0.0.1/crontab/Jump.php，执行完成之后响应值为http://127.0.0.1/crontab/Jump.php?page=1并js跳转到该网址
+A机器提供业务网址：http://Jump.php，执行完成之后响应值为http://Jump.php?page=1并js跳转到该网址
 
-B机器将php Browser.php -u http%3A%2F%2F127.0.0.1%2Fcrontab%2FJump.php记录在auto_Browser.crontab文件中等待定时任务进程扫描。
+B机器将php Browser.php -u http%3A%2F%2FJump.php记录在auto_Browser.crontab文件中等待定时任务进程扫描。
 
-B机器定时任务扫描0.1秒后即可执行php Browser.php -u http%3A%2F%2F127.0.0.1%2Fcrontab%2FJump.php，该脚本中请求A机器上的服务后返回结果http://127.0.0.1/crontab/Jump.php?page=1。
+B机器定时任务扫描0.1秒后即可执行php Browser.php -u http%3A%2F%2FJump.php，该脚本中请求A机器上的服务后返回结果http://Jump.php?page=1。
 
 B机器立即将crontab中的记录修改为下一个网址的定时任务，同时将已经执行过的网址加锁并清除定时任务。
 

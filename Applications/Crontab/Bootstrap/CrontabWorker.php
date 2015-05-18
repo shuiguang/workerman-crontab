@@ -229,7 +229,7 @@ exec($value);';
                 pclose(popen('start /B php '.$pid_file, 'r'));
             }else
             {
-                pclose(popen('php '.$pid_file.'> /dev/null &', 'r'));
+                pclose(popen('php '.$pid_file.' > /dev/null &', 'r'));
             }
         }
     }

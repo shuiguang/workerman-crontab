@@ -36,7 +36,7 @@
         </div>
         <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
         <script type="text/javascript">
-            var port = <?php if(isset($port))echo $port;?>;
+            var port = '<?php if(isset($port))echo $port;?>';
         </script>
         <script type="text/javascript" src="js/main.js"></script>
         <script type="text/javascript">

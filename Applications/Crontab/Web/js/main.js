@@ -4,7 +4,7 @@ var read_t = setInterval(function(){
 var task_t = setInterval(function(){
 	get_status();
 }, 2000);
-port = "undefined" != typeof(port) ? ':'+port : ':'+5566;
+port = "undefined" != typeof(port) ? ':'+port : ':'+80;
 
 //停止读取日志
 function stop_read(){

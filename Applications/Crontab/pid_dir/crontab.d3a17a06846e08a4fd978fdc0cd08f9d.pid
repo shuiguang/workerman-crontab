@@ -1,0 +1,6 @@
+<?php
+$value =
+<<<EOF
+/www/backup/cut-logs
+EOF;
+exec($value);

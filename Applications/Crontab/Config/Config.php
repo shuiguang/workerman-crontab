@@ -15,22 +15,22 @@ namespace Crontab;
 class Config
 {
     // cron任务目录
-    public static $cron_dir = './Applications/Crontab/cron_dir';
+    public static $cron_dir = '';
     
     // run文件目录
-    public static $run_dir = './Applications/Crontab/run_dir';
+    public static $run_dir = '';
     
     // pid文件目录
-    public static $pid_dir = './Applications/Crontab/pid_dir';
+    public static $pid_dir = '';
     
     // lock文件目录
-    public static $lock_dir = './Applications/Crontab/lock_dir';
-     
+    public static $lock_dir = '';
+    
     // 黑名单目录
-    public static $forbidden_dir = './Applications/Crontab/forbidden_dir';
+    public static $forbidden_dir = '';
     
     // 执行日志目录
-    public static $log_dir = './Applications/Crontab/log_dir';
+    public static $log_dir = '';
      
     // 执行的子任务进程后缀
     public static $pid_suffix = 'pid';
@@ -54,3 +54,10 @@ class Config
     public static $adminPassword = '';
 
 }
+// 如果在上面已经手动指定了绝对路径请将下面的设置注释掉
+Config::$cron_dir = __DIR__ . '/../cron_dir';
+Config::$run_dir = __DIR__ . '/../run_dir';
+Config::$pid_dir = __DIR__ . '/../pid_dir';
+Config::$lock_dir = __DIR__ . '/../lock_dir';
+Config::$forbidden_dir = __DIR__ . '/../forbidden_dir';
+Config::$log_dir = __DIR__ . '/../log_dir';

@@ -1,0 +1,4 @@
+[2015-05-25 23:49:36]<font color="green">a.crontab定时任务已启动</font>[/www/workerman-crontab/Applications/Crontab/Modules/start_task.php:31]
+[2015-05-25 23:49:45]<font color="red">a.crontab定时任务已停止</font>[/www/workerman-crontab/Applications/Crontab/Modules/stop_task.php:19]
+[2015-05-25 23:50:27]<font color="green">auto_Browser.crontab定时任务已启动</font>[/www/workerman-crontab/Applications/Crontab/Modules/start_task.php:31]
+[2015-05-25 23:50:40]<font color="red">auto_Browser.crontab定时任务已停止</font>[/www/workerman-crontab/Applications/Crontab/Modules/stop_task.php:19]

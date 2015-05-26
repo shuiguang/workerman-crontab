@@ -41,3 +41,33 @@
 2015-05-22 15:33:05 Workerman[start.php] status
 2015-05-22 15:33:10 Workerman[start.php] status
 2015-05-22 15:33:14 Workerman[start.php] status
+2015-05-22 15:59:55 Workerman[start.php] stop
+2015-05-22 15:59:55 Workerman[start.php] is stoping ...
+2015-05-22 15:59:55 Workerman[start.php] Stopping ...
+2015-05-22 15:59:55 Workerman[start.php] has been stopped
+2015-05-22 15:59:55 Workerman[start.php] stop success
+2015-05-22 16:00:03 Workerman[start.php] start
+2015-05-24 18:35:40 Workerman[/www/workerman-crontab/start.php] start
+2015-05-26 17:04:20 Workerman[start.php] stop
+2015-05-26 17:04:20 Workerman[start.php] is stoping ...
+2015-05-26 17:04:20 Workerman[start.php] Stopping ...
+2015-05-26 17:04:20 Workerman[start.php] has been stopped
+2015-05-26 17:04:20 Workerman[start.php] stop success
+2015-05-26 17:05:29 Workerman[/www/workerman-crontab/start.php] start
+2015-05-26 17:07:57 Workerman[/www/workerman-crontab/start.php] stop
+2015-05-26 17:07:57 Workerman[/www/workerman-crontab/start.php] is stoping ...
+2015-05-26 17:07:57 Workerman[start.php] Stopping ...
+2015-05-26 17:07:57 Workerman[start.php] has been stopped
+2015-05-26 17:07:57 Workerman[/www/workerman-crontab/start.php] stop success
+2015-05-26 17:08:08 Workerman[/www/workerman-crontab/start.php] start
+2015-05-26 17:11:23 Workerman[/www/workerman-crontab/start.php] stop
+2015-05-26 17:11:23 Workerman[/www/workerman-crontab/start.php] is stoping ...
+2015-05-26 17:11:23 Workerman[start.php] Stopping ...
+2015-05-26 17:11:23 Workerman[start.php] has been stopped
+2015-05-26 17:11:23 Workerman[/www/workerman-crontab/start.php] stop success
+2015-05-26 17:11:36 Workerman[/www/workerman-crontab/start.php] start
+2015-05-26 17:14:03 Workerman[/www/workerman-crontab/start.php] stop
+2015-05-26 17:14:03 Workerman[/www/workerman-crontab/start.php] is stoping ...
+2015-05-26 17:14:03 Workerman[start.php] Stopping ...
+2015-05-26 17:14:03 Workerman[start.php] has been stopped
+2015-05-26 17:14:03 Workerman[/www/workerman-crontab/start.php] stop success

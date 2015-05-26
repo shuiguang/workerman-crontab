@@ -15,6 +15,7 @@ require_once __DIR__ .'/Config/Config.php';
 $worker = new CrontabWorker("tcp://0.0.0.0:3366");
 // worker名称
 $worker->name = 'CrontabWorker';
+$worker->user = 'root';
 // bussinessWorker进程数量
 $worker->count = 1;
 

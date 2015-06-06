@@ -71,3 +71,10 @@
 2015-05-26 17:14:03 Workerman[start.php] Stopping ...
 2015-05-26 17:14:03 Workerman[start.php] has been stopped
 2015-05-26 17:14:03 Workerman[/www/workerman-crontab/start.php] stop success
+2015-06-06 10:00:08 Workerman[start.php] sop
+2015-06-06 10:00:12 Workerman[start.php] stop
+2015-06-06 10:00:12 Workerman[start.php] is stoping ...
+2015-06-06 10:00:12 Workerman[start.php] Stopping ...
+2015-06-06 10:00:12 Workerman[start.php] has been stopped
+2015-06-06 10:00:12 Workerman[start.php] stop success
+2015-06-06 10:00:16 Workerman[start.php] start

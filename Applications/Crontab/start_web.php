@@ -13,7 +13,7 @@ require_once __DIR__ .'/Config/Config.php';
 // WebServer 进程
 $webserver = new WebServer('http://0.0.0.0:5566');
 $webserver->name = 'CrontabWeb';
-$webserver->user = 'www';
+$webserver->user = 'root';
 $webserver->count = 1;
 $webserver->addRoot('www.your_domain.com', __DIR__.'/Web');
 

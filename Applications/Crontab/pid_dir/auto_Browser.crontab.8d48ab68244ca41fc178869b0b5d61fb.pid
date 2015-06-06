@@ -1,0 +1,6 @@
+<?php
+$value =
+<<<EOF
+php /Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D9
+EOF;
+exec($value);

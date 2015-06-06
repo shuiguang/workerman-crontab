@@ -1,2 +1,0 @@
-#定时任务测试b
-06 12 * * * root echo 'b' >> test.txt

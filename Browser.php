@@ -12,7 +12,7 @@
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 //引入CrontabBrowser类
-include '/www/workerman-crontab/CrontabBrowser.class.php';
+include __DIR__ . '/CrontabBrowser.class.php';
 //设置入口请求网址
 $start_url = 'http://www.modulesoap.com/Jump.php';
 //配置参数

@@ -21,13 +21,13 @@ function remove_task($file = '')
         $cron_dir = WEB_ROOT.'/'.basename(Crontab\Config::$cron_dir);
         $run_dir = WEB_ROOT.'/'.basename(Crontab\Config::$run_dir);
         $pid_dir = WEB_ROOT.'/'.basename(Crontab\Config::$pid_dir);
-        $copy_file = $forbidden_dir.'/'.$file;
+        $forbidden_file = $forbidden_dir.'/'.$file;
         $cron_file = $cron_dir.'/'.$file;
         $run_file = $run_dir.'/'.$file;
         //移除forbidden_dir下文件
-        if(file_exists($copy_file))
+        if(file_exists($forbidden_file))
         {
-            @unlink($copy_file);
+            @unlink($forbidden_file);
         }
         //移除rundir下文件
         if(file_exists($run_file))

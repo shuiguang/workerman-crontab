@@ -1,6 +1,0 @@
-<?php
-$value =
-<<<EOF
-echo 'aca' >> test.txt
-EOF;
-exec($value);

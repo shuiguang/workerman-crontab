@@ -15,6 +15,7 @@ function stop_all()
 {
     $run_dir = WEB_ROOT.'/'.basename(Crontab\Config::$run_dir);
     $pid_dir = WEB_ROOT.'/'.basename(Crontab\Config::$pid_dir);
+    $lock_dir = WEB_ROOT.'/'.basename(Crontab\Config::$lock_dir);
     foreach(glob($run_dir.'/*') as $cur_file)
     {
         //断点任务不重置
@@ -35,6 +36,11 @@ function stop_all()
             }
             //移除pid_dir下文件
             foreach(glob($pid_dir.'/'.$file.'*'.Crontab\Config::$pid_suffix) as $cur_file)
+            {
+                @unlink($cur_file);
+            }
+            //移除lock_dir下文件
+            foreach(glob($lock_dir.'/'.$file.'*'.Crontab\Config::$lock_suffix) as $cur_file)
             {
                 @unlink($cur_file);
             }

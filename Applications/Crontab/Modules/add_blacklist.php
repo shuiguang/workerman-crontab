@@ -21,6 +21,7 @@ function add_blacklist($file = '')
         $cron_dir = WEB_ROOT.'/'.basename(Crontab\Config::$cron_dir);
         $run_dir = WEB_ROOT.'/'.basename(Crontab\Config::$run_dir);
         $pid_dir = WEB_ROOT.'/'.basename(Crontab\Config::$pid_dir);
+        $lock_dir = WEB_ROOT.'/'.basename(Crontab\Config::$lock_dir);
         $forbidden_file = $forbidden_dir.'/'.$file;
         $cron_file = $cron_dir.'/'.$file;
         $run_file = $run_dir.'/'.$file;
@@ -40,6 +41,11 @@ function add_blacklist($file = '')
         }
         //移除pid_dir下文件
         foreach(glob($pid_dir.'/'.$file.'*'.Crontab\Config::$pid_suffix) as $cur_file)
+        {
+            @unlink($cur_file);
+        }
+        //移除lock_dir下文件
+        foreach(glob($lock_dir.'/'.$file.'*'.Crontab\Config::$lock_suffix) as $cur_file)
         {
             @unlink($cur_file);
         }

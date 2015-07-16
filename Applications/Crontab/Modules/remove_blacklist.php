@@ -19,13 +19,13 @@ function remove_blacklist($file = '')
     {
         $forbidden_dir = WEB_ROOT.'/'.basename(Crontab\Config::$forbidden_dir);
         $cron_dir = WEB_ROOT.'/'.basename(Crontab\Config::$cron_dir);
-        $copy_file = $forbidden_dir.'/'.$file;
+        $forbidden_file = $forbidden_dir.'/'.$file;
         $cur_file = $cron_dir.'/'.$file;
-        if(file_exists($copy_file))
+        if(file_exists($forbidden_file))
         {
-            @unlink($copy_file);
+            @unlink($forbidden_file);
         }
-        if(!file_exists($copy_file))
+        if(!file_exists($forbidden_file))
         {
             log_mess('<font color="red">'.$file.'定时任务已从黑名单移除</font>', __FILE__, __LINE__);
             echo('success');

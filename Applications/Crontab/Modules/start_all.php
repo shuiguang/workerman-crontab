@@ -1,6 +1,15 @@
 <?php
 /**
- * 开始所有定时任务组
+ * This file is part of workerman-crontab.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ * start all tasks
+ * 批量启动所有定时任务组,但对断点任务组和黑名单任务组无效
+ * @author shuiguang
+ * @link https://github.com/shuiguang/workerman-crontab
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 function start_all()
 {

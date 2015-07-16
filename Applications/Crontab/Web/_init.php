@@ -5,10 +5,9 @@
  * Licensed under The MIT License
  * For full copyright and license information, please see the MIT-LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
- *
+ * WEB初始化
  * @author shuiguang
- * @copyright shuiguang
- * @link http://www.modulesoap.com/
+ * @link https://github.com/shuiguang/windows-crontab
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 define('WEB_ROOT', realpath(__DIR__.'/../'));

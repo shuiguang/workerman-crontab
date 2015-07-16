@@ -1,0 +1,38 @@
+[2015-07-16 16:57:29]<font color="red">auto_Browser.crontab在黑名单无法启动</font>[/www/workerman-crontab/Applications/Crontab/Modules/start_task.php:23]
+[2015-07-16 16:57:29]<font color="green">auto_Browser.crontab定时任务已启动</font>[/www/workerman-crontab/Applications/Crontab/Modules/start_task.php:41]
+[2015-07-16 16:57:31]<font color="red">auto_Browser.crontab定时任务已从黑名单移除</font>[/www/workerman-crontab/Applications/Crontab/Modules/remove_blacklist.php:30]
+<font color="green">[2015-07-16 16:57:31]正在执行php Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php[auto_Browser.crontab:2]</font>
+<font color="green">[2015-07-16 16:57:32]正在执行php Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php[auto_Browser.crontab:2]</font>
+网址http://www.modulesoap.com/Jump.php被锁定,锁定文件：auto_Browser.crontab.cfc8d5e428aebd6ae10ab9d1fd7d7265.lock
+正在请求：http://www.modulesoap.com/Jump.php,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=1,当前时间1437037052
+<font color="green">[2015-07-16 16:57:33]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D1[auto_Browser.crontab:3]</font>
+[2015-07-16 16:57:33]<font color="green">auto_Browser.crontab定时任务已启动</font>[/www/workerman-crontab/Applications/Crontab/Modules/start_task.php:41]
+<font color="green">[2015-07-16 16:57:34]正在执行php Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php[auto_Browser.crontab:2]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=1,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=2,当前时间1437037054
+<font color="green">[2015-07-16 16:57:35]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D2[auto_Browser.crontab:3]</font>
+正在请求：http://www.modulesoap.com/Jump.php,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=1,当前时间1437037055
+<font color="green">[2015-07-16 16:57:36]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D1[auto_Browser.crontab:4]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=2,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=3,当前时间1437037056
+<font color="green">[2015-07-16 16:57:37]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D3[auto_Browser.crontab:5]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=1,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=2,当前时间1437037057
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=3,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=4,当前时间1437037058
+<font color="green">[2015-07-16 16:57:39]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D4[auto_Browser.crontab:7]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=4,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=5,当前时间1437037060
+<font color="green">[2015-07-16 16:57:41]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D5[auto_Browser.crontab:8]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=5,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=6,当前时间1437037062
+<font color="green">[2015-07-16 16:57:43]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D6[auto_Browser.crontab:9]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=6,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=7,当前时间1437037064
+<font color="green">[2015-07-16 16:57:45]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D7[auto_Browser.crontab:10]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=7,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=8,当前时间1437037066
+<font color="green">[2015-07-16 16:57:47]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D8[auto_Browser.crontab:11]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=8,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=9,当前时间1437037068
+<font color="green">[2015-07-16 16:57:49]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D9[auto_Browser.crontab:12]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=9,返回网址：http://www.modulesoap.com/Jump.php?key=test&id=10,当前时间1437037070
+<font color="green">[2015-07-16 16:57:51]正在执行php /www/workerman-crontab/Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php%3Fkey%3Dtest%26id%3D10[auto_Browser.crontab:13]</font>
+正在请求：http://www.modulesoap.com/Jump.php?key=test&id=10,返回网址：,当前时间1437037072
+采集结束http://www.modulesoap.com/Jump.php?key=test&id=10,返回字符串：finish
+[2015-07-16 16:57:56]<font color="red">auto_Browser.crontab定时任务已停止</font>[/www/workerman-crontab/Applications/Crontab/Modules/stop_task.php:36]
+<font color="green">[2015-07-16 16:58:00]正在执行echo 'a' >> test.txt[a.crontab:3]</font>
+<font color="green">[2015-07-16 16:58:00]正在执行echo 'aca' >> test.txt[a.crontab:4]</font>
+<font color="green">[2015-07-16 16:59:00]正在执行echo 'a' >> test.txt[a.crontab:3]</font>
+<font color="green">[2015-07-16 16:59:00]正在执行echo 'aca' >> test.txt[a.crontab:4]</font>

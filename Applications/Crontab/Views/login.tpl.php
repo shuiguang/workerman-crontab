@@ -88,7 +88,7 @@
           padding-right: 35px;
         }
         .alert {
-          padding: 15px;
+          padding: 15px 15px 0px 15px;
           margin-bottom: 20px;
           border: 1px solid transparent;
           border-radius: 4px;
@@ -138,7 +138,7 @@
         <div class="col-md-4 column">
         <?php if(!empty($msg)){?>
             <div class="alert alert-dismissable alert-danger">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="this.parentNode.parentNode.removeChild(this.parentNode);">×</button>
                 <h4>
                     <?php echo $msg;?>
                 </h4> 

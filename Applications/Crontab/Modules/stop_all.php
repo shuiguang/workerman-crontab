@@ -1,10 +1,20 @@
 <?php
 /**
- * 停止所有定时任务组
+ * This file is part of workerman-crontab.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ * remove task team
+ * 停止所有任务组
+ * @author shuiguang
+ * @link https://github.com/shuiguang/workerman-crontab
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 function stop_all()
 {
     $run_dir = WEB_ROOT.'/'.basename(Crontab\Config::$run_dir);
+    $pid_dir = WEB_ROOT.'/'.basename(Crontab\Config::$pid_dir);
     foreach(glob($run_dir.'/*') as $cur_file)
     {
         //断点任务不重置
@@ -22,6 +32,11 @@ function stop_all()
                 }
             }else{
                 echo('error');
+            }
+            //移除pid_dir下文件
+            foreach(glob($pid_dir.'/'.$file.'*'.Crontab\Config::$pid_suffix) as $cur_file)
+            {
+                @unlink($cur_file);
             }
         }
     }

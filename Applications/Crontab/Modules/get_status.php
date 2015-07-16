@@ -1,10 +1,19 @@
 <?php
 /**
- * 读取任务组状态
+ * This file is part of workerman-crontab.
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ * get all tasks info
+ * 读取任务组状态以json信息返回给前端
+ * @author shuiguang
+ * @link https://github.com/shuiguang/workerman-crontab
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 function get_status()
 {
-    //获取定时任务总数和正常运行数
+    //获取定时任务组总数和正在运行的任务组数量
     $list_file = array();
     $count_file = 0;
     $error_file = 0;
@@ -27,7 +36,7 @@ function get_status()
         }else{
             $black = false;
         }
-        //获取描述信息
+        //获取每组任务第一行作为描述信息
         $description = '';
         $commands = file($cur_file);
         foreach($commands as $command)

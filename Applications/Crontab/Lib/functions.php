@@ -8,7 +8,7 @@
  *
  * @author shuiguang
  * @copyright shuiguang
- * @link http://www.modulesoap.com/
+ * @link https://github.com/shuiguang/workerman-crontab
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 use Workerman\Protocols\Http;
@@ -48,7 +48,7 @@ function check_auth()
 }
 
 /**
- * 启动session，兼容fpm
+ * 启动session,兼容fpm
  */
 function _session_start()
 {
@@ -102,7 +102,7 @@ function _setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $
 }
 
 /**
- * 工具函数，读取文件最后$n行
+ * 工具函数,读取文件最后$n行
  * @param   string      $filename 文件的路径
  * @param   int         $n 文件的行数
  * @return  string
@@ -138,7 +138,7 @@ function FileLastLines($filename, $n = 1)
 }
 
 /**
- * 工具函数，日志记录函数
+ * 工具函数,日志记录函数
  * @param   string     $string 记录字符串
  * @param   string     $pos 调用者的文件路径
  * @return  null

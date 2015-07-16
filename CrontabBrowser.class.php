@@ -7,11 +7,10 @@
  * Redistributions of files must retain the above copyright notice.
  *
  * @author shuiguang
- * @copyright shuiguang
- * @link http://www.modulesoap.com/
+ * @link https://github.com/shuiguang/workerman-crontab
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  * 
- *  PHP模拟浏览器请求网址
+ *  PHP模拟浏览器类
  *  
  *  示例
  *  //引入CrontabBrowser类
@@ -25,7 +24,7 @@
             'admin_name' => 'Browser',
             'admin_password' => 'Browser',
         ),
-        //如果使用了SESSION验证，还可以设置cookie验证信息
+        //如果使用了SESSION验证,还可以设置cookie验证信息
         'cookies' => array(
             'PHPSESSID' => md5(__FILE__),
         ),
@@ -36,7 +35,6 @@
     //启动浏览器
     $cb -> startBrowser($start_url);
  *  
- * @author walkor <worker-man@qq.com>
  */
 include __DIR__ . '/Applications/Crontab/Config/Config.php';
 include __DIR__ . '/Snoopy.class.php';
@@ -61,11 +59,11 @@ class CrontabBrowser
     public $exec_time = '* * * * *';
     // 系统php执行用户
     public $exec_user = 'root';
-    // 系统php路径，需要添加环境变量
+    // 系统php路径,需要添加环境变量
     public $exec_home = 'php';
     // PHP_CLI执行传入参数名称
     public $opt_key = 'u';
-    // PHP_CLI执行文件，默认为本文件路径
+    // PHP_CLI执行文件,默认为本文件路径
     public $exec_file =  '';
     // PHP_CLI执行传入参数的值：url为网址
     public $url = '';
@@ -121,13 +119,13 @@ class CrontabBrowser
      */
     public function startBrowser($url = '')
     {
-        //php cli参数优先，$url传参无效
+        //php cli参数优先,$url传参无效
         $params = getopt($this->opt_key.':');
         if($params[$this->opt_key])
         {
             $this->url = urldecode($params[$this->opt_key]);
         }else{
-            //如果没有php cli参数，则将传参作为入口请求网址
+            //如果没有php cli参数,则将传参作为入口请求网址
             $this->url = $url;
         }
         if($this->url)
@@ -142,10 +140,10 @@ class CrontabBrowser
                 //请求网址
                 $response = $this->request_url($this->url);
                 $next_url = $this->match_script_url($response);
-                $this->log_mess('正在请求：'.$this->url.'，返回网址：'.$next_url.'，当前时间'.time());
+                $this->log_mess('正在请求：'.$this->url.',返回网址：'.$next_url.',当前时间'.time());
                 if(strpos($response, $this->finish_str) !== false || !$next_url)
                 {
-                    $this->log_mess('采集结束'.$this->url.'，返回字符串：'.$this->finish_str);
+                    $this->log_mess('请求结束'.$this->url.',返回字符串：'.$this->finish_str);
                     $this->add_cron('');
                     die($this->finish_str);
                 }else{
@@ -153,15 +151,15 @@ class CrontabBrowser
                 }
             }else{
                 $this->add_cron('');
-                $this->log_mess('网址'.$this->url.'被锁定，锁定文件：'.basename($lock_file));
+                $this->log_mess('网址'.$this->url.'被锁定,锁定文件：'.basename($lock_file));
             }
         }
     }
     
     /**
      * 获取php cmd命令
-     * @param   array   $url为网址
-     * @return  string
+     * @param array $url
+     * @return string
      */
     private function get_cmd($url)
     {
@@ -181,8 +179,8 @@ class CrontabBrowser
     
     /**
      * 获取pid文件名不带后缀和路径
-     * @param   array   $url为网址
-     * @return  string
+     * @param array $url
+     * @return string
      */
     private function get_pid_name($url)
     {
@@ -191,9 +189,9 @@ class CrontabBrowser
     }
     
     /**
-     * 写入lock文件，防止重复访问
-     * @param   string      $url 请求的网址
-     * @return  null
+     * 写入lock文件,防止重复访问
+     * @param string $url
+     * @return null
      */
     public function lock_cron($url)
     {
@@ -204,9 +202,9 @@ class CrontabBrowser
     }
     
     /**
-     * 写入run_dir下文件，修改定时任务命令
-     * @param   string      $url 请求的网址
-     * @return  null
+     * 写入run_dir下文件,修改定时任务命令
+     * @param string $url
+     * @return null
      */
     public function add_cron($url = '')
     {
@@ -248,9 +246,9 @@ class CrontabBrowser
     }
     
     /**
-     * 从响应内容中匹配出跳转地址，优先匹配script标签
-     * @param   string      $response 请求的响应字符串
-     * @return  string
+     * 从响应内容中匹配出跳转地址,优先匹配script标签
+     * @param string $response
+     * @return string
      */
     public function match_script_url($response)
     {
@@ -272,8 +270,8 @@ class CrontabBrowser
     
     /**
      * 记录请求信息
-     * @param   string      $message 待记录的字符串
-     * @return  string
+     * @param string $message
+     * @return string
      */
     public function log_mess($message)
     {
@@ -282,8 +280,8 @@ class CrontabBrowser
     
     /**
      * 使用Snoopy采集类
-     * @param   string      $url 请求的网址
-     * @return  string
+     * @param string $url
+     * @return string
      */
     public function request_url($url)
     {
@@ -323,9 +321,9 @@ class CrontabBrowser
     
     /**
      * Snoopy采集类cookie存盘
-     * @param   array       $cookies 浏览器返回的cookie数组
-     * @param   string      $cookie_path 浏览器暂存的cookie文件路径
-     * @return  string
+     * @param array $cookies
+     * @param string $cookie_path
+     * @return string
      */
     public function set_cookie($cookies, $cookie_path)
     {
@@ -334,8 +332,8 @@ class CrontabBrowser
     
     /**
      * 使用Snoopy采集类cookie读取
-     * @param   string      $cookie_path 浏览器暂存的cookie文件路径
-     * @return  string
+     * @param string $cookie_path
+     * @return string
      */
     public function get_cookie($cookie_path)
     {

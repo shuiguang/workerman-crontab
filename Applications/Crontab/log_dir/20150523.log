@@ -1,5 +1,0 @@
-[2015-05-23 09:24:07]<font color="green">a.crontab定时任务已启动</font>[/www/workerman-crontab/Applications/Crontab/Modules/start_task.php:31]
-<font color="green">[2015-05-23 09:24:07]正在执行echo 'a' >> test.txt[a.crontab:3]</font>
-<font color="green">[2015-05-23 09:24:07]正在执行echo 'aca' >> test.txt[a.crontab:4]</font>
-[2015-05-23 09:24:09]<font color="red">a.crontab定时任务已停止</font>[/www/workerman-crontab/Applications/Crontab/Modules/stop_task.php:19]
-<font color="green">[2015-05-23 23:59:00]正在执行/www/backup/cut-logs[crontab:11]</font>

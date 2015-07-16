@@ -1,8 +1,9 @@
+//主界面js
 var read_t = setInterval(function(){
-	read_log();
+    read_log();
 }, 2000);
 var task_t = setInterval(function(){
-	get_status();
+    get_status();
 }, 2000);
 port = "undefined" != typeof(port) ? ':'+port : ':'+80;
 
@@ -62,7 +63,7 @@ function get_status(){
         url: 'http://'+document.domain+port+'/get_status',
         success: function(data){
             var obj = eval("("+data+")");
-            $("#jianceyemian_div").html('以下共有 <font color="green"><b>'+obj.count_file+'</font></b> 条定时任务，其中 <b><font color="red">'+obj.error_file+'</font></b> 条未启动<a href="javascript:" title="" id="server-show-b" class="on_show">&nbsp;</a>');
+            $("#jianceyemian_div").html('以下共有 <font color="green"><b>'+obj.count_file+'</font></b> 条定时任务,其中 <b><font color="red">'+obj.error_file+'</font></b> 条未启动<a href="javascript:" title="" id="server-show-b" class="on_show">&nbsp;</a>');
             var content = '';
             for(var i=0; i<obj.list_file.length; i++){
                 content += '<tr class="'+(obj.list_file[i].prefix ? 'auto_cron' : '')+'">';
@@ -81,7 +82,7 @@ function get_status(){
                 content +=  '</td>';
                 content +=  '<td align="left">';
                 content +=  '<p>';
-				
+                
                 if(obj.list_file[i].black){
                     content +=  '<input type="button" value="移出黑名单" class="con_button" onclick="remove_blacklist($(this), \''+obj.list_file[i].file+'\')"/>';
                     content +=  '<input type="button" value="删除任务" class="con_button" onclick="remove_task($(this), \''+obj.list_file[i].file+'\')"/>';
@@ -89,11 +90,11 @@ function get_status(){
                     {
                         content +=  '<input type="button" value="停止任务" class="con_button" disabled=true onclick="stop_task($(this), \''+obj.list_file[i].file+'\')"/>';
                     }else{
-						if(obj.list_file[i].prefix){
-							content +=  '<input type="button" value="启动任务" class="con_button" onclick="start_task($(this), \''+obj.list_file[i].file+'\')"/>';
-						}else{
-							content +=  '<input type="button" value="启动任务" class="con_button" disabled=true onclick="start_task($(this), \''+obj.list_file[i].file+'\')"/>';
-						}
+                        if(obj.list_file[i].prefix){
+                            content +=  '<input type="button" value="启动任务" class="con_button" onclick="start_task($(this), \''+obj.list_file[i].file+'\')"/>';
+                        }else{
+                            content +=  '<input type="button" value="启动任务" class="con_button" disabled=true onclick="start_task($(this), \''+obj.list_file[i].file+'\')"/>';
+                        }
                     }
                 }else{
                     content +=  '<input type="button" value="加入黑名单" class="con_button" onclick="add_blacklist($(this), \''+obj.list_file[i].file+'\')"/>';
@@ -149,7 +150,7 @@ function remove_blacklist(obj, file){
 
 //删除定时任务
 function remove_task(obj, file){
-    if(confirm('确定要删除'+file+'吗？如果不想删除请使用黑名单功能，点击确定直接删除。')){
+    if(confirm('确定要删除'+file+'吗？如果不想删除请使用黑名单功能,点击确定直接删除')){
         $.ajax({
             type: 'GET',
             cache: false,
@@ -168,7 +169,7 @@ function remove_task(obj, file){
 //启动定时任务
 function start_task(obj, file){
     if(obj.parents('tr').hasClass('auto_cron')){
-        if(!confirm(file+'任务为断点执行任务，确定要重置到初始值？')){
+        if(!confirm(file+'任务为断点执行任务,确定要重置到初始值？')){
             return false;
         }
     }
@@ -188,7 +189,7 @@ function start_task(obj, file){
 //停止子进程
 function stop_task(obj, file){
     if(obj.parents('tr').hasClass('auto_cron')){
-        if(!confirm(file+'任务为断点执行任务，确定后将会删除断点！')){
+        if(!confirm(file+'任务为断点执行任务,确定后将会删除断点！')){
             return false;
         }
     }

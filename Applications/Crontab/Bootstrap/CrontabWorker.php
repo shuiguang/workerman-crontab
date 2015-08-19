@@ -22,28 +22,28 @@ class CrontabWorker extends Worker
      * 移除crontab语句中可能存在的用户名,如root,Admintrator
      * @var array
      */
-    protected $current_user = array();
+    protected static $current_user = array();
     
     /**
      * file scanner interval
-     * 定时任务文件扫描间隔,建议在0.1-1之间,可根据CPU运转压力适当调整
+     * 定时任务文件扫描间隔值小于等于1,建议在0.1-1之间,可根据CPU运转压力适当调整
      * @var float
      */
-    private $interval = 1;
+    private static $interval = 1;
     
     /**
      * cache for each crontab group
      * 定时任务组命令缓存,当filemtime发生变化时将重新缓存,避免频繁读取磁盘
      * @var array
      */
-    private $cron_cache = array();
+    private static $cron_cache = array();
     
     /**
      * crontab time syntax
-     * 定时任务命令时间语法,默认和linux一致,可选Y-m-d H:i:s启用秒级定时功能
+     * 定时任务命令时间语法,默认和linux一致,可选Y-m-d H:i:s启用秒级定时功能(需要为每条定时任务添加秒参数,例如* * * * * *表示每1秒执行一次)
      * @var string
      */
-    private $cron_standard = 'Y-m-d H:i';
+    private static $cron_standard = 'Y-m-d H:i';
 
     /**
      * workerman method
@@ -95,11 +95,11 @@ class CrontabWorker extends Worker
             @unlink($cur_file);
         }
         //保存当前脚本的用户,并尝试移除定时任务命令中该用户名
-        $this->current_user = array_merge(Config::$exec_user, array(get_current_user()));
+        self::$current_user = array_merge(Config::$exec_user, array(get_current_user()));
         //设置时区
         date_default_timezone_set('PRC');
         //添加扫描器
-        Timer::add($this->interval, array($this, 'startCrontab'));
+        Timer::add(self::$interval, array($this, 'startCrontab'));
     }
     
     /**
@@ -123,14 +123,14 @@ class CrontabWorker extends Worker
                 //仅当定时任务文件和运行状态文件的filemtime完全相同时才会从缓存取值
                 if(filemtime($cur_file) == filemtime($run_file))
                 {
-                    if(isset($this->cron_cache[$file]['cmd']))
+                    if(isset(self::$cron_cache[$file]['cmd']))
                     {
                         //已命中缓存,从缓存中去读
-                        $command_arr = $this->cron_cache[$file]['cmd'];
+                        $command_arr = self::$cron_cache[$file]['cmd'];
                     }else{
                         //初次读取文件并缓存到变量中
                         $command_arr = explode("\n", file_get_contents($cur_file));
-                        $this->cron_cache[$file]['cmd'] = $command_arr;
+                        self::$cron_cache[$file]['cmd'] = $command_arr;
                     }
                 }else{
                     //未命中缓存,文件更新时间不一致导致变量缓存失效,建议使用手动复制或者rsync能够同步文件修改时间的方式保证filemtime值相同
@@ -139,16 +139,19 @@ class CrontabWorker extends Worker
                         //例外,对断点任务不使用同步方式,以保证断点任务能够从断点处继续执行下去
                         $command_arr = explode("\n", file_get_contents($run_file));
                         //清空断点任务列表,不使用缓存
-                        $this->cron_cache[$file]['task'] = array();
+                        self::$cron_cache[$file]['task'] = array();
                     }else{
                         //普通任务同步文件,包括文件的filemtime
                         $this->sync_file($cur_file, $run_file);
                         $command_arr = explode("\n", file_get_contents($cur_file));
                     }
                     //将当前任务组下所有命令加入缓存
-                    $this->cron_cache[$file]['cmd'] = $command_arr;
+                    self::$cron_cache[$file]['cmd'] = $command_arr;
                 }
                 $line = 0;
+                $start_time = time();
+                //去除前导零
+                $start_second = intval(ltrim(date('s', $start_time),'0'));
                 foreach($command_arr as $command)
                 {
                     $line++;
@@ -162,47 +165,63 @@ class CrontabWorker extends Worker
                     $part = explode(' ', $command);
                     if(isset($part[5]))
                     {
-                        $mission['cron_time'] = $part[0].' '.$part[1].' '.$part[2].' '.$part[3].' '.$part[4];
+                        if(self::$cron_standard == 'Y-m-d H:i:s')
+                        {
+                            $mission['cron_time'] = $part[0].' '.$part[1].' '.$part[2].' '.$part[3].' '.$part[4].' '.$part[5];
+                        }else{
+                            $mission['cron_time'] = $part[0].' '.$part[1].' '.$part[2].' '.$part[3].' '.$part[4];
+                        }
                         $mission['value'] = str_replace($mission['cron_time'], '', $command);
                         //尝试去掉可能存在的执行用户名
-                        foreach($this->current_user as $user)
+                        foreach(self::$current_user as $user)
                         {
                             $mission['value'] = trim(preg_replace('/^\s+'.$user.'\s+/', '', ' '.$mission['value'].' '));
                         }
-                        $start_time = time();
-                        //如果解析不为空则说明执行时间已到
-                        if(\Lib\ParseCrontab::parse($mission['cron_time'], $start_time))
+                        //解析返回执行的秒组成的数组
+                        $array = \Lib\ParseCrontab::parse($mission['cron_time'], $start_time);
+                        if(is_array($array))
                         {
-                            //排他处理,保证$this->cron_standard单位时间内以单例模式运行
-                            $mission['exec_time'] = date($this->cron_standard, time());
+                            //普通任务使用$cron_standard判断保证每个单位时间内只被执行一次
+                            $mission['exec_time'] = date(self::$cron_standard, $start_time);
                             $pid_file = $this->get_pid_file($file, $mission['value']);
-                            //如果缓存中存在待执行的任务命令信息数组(单条命令语句以pid脚本存储在pid_dir中)
-                            if(isset($this->cron_cache[$file]['task'][$pid_file]))
+                            //例外,断点任务时间需设置为* * * * *,不做单位时间判断,而是使用lock文件保证每个url只被请求一次
+                            if(strpos($file, Config::$auto_prefix) === 0)
                             {
-                                if($this->cron_cache[$file]['task'][$pid_file]['exec_time'] == $mission['exec_time'])
-                                {
-                                    //已经有命令在执行,当前扫描跳过执行
-                                    continue;
-                                }else
-                                {
-                                    //未发现任何执行,将当前命令信息数组保存到缓存中
-                                    $this->cron_cache[$file]['task'][$pid_file] = $mission;
-                                    //正式执行
-                                    $this->runCrontab($mission['value'], $file, $line);
-                                }
-                            }else{
-                                //例外,不对断点任务命令信息数组进行缓存,直接执行
-                                $this->cron_cache[$file]['task'][$pid_file] = $mission;
+                                self::$cron_cache[$file]['task'][$pid_file] = $mission;
                                 $this->runCrontab($mission['value'], $file, $line);
+                            }else{
+                                //普通任务根据待执行的秒数进行执行,兼容linux的crontab的语句只会在第1秒时执行
+                                if(in_array($start_second, $array, true))
+                                {
+                                    //如果缓存中存在待执行的任务命令信息数组(单条命令语句以pid脚本存储在pid_dir中)
+                                    if(isset(self::$cron_cache[$file]['task'][$pid_file]))
+                                    {
+                                        if(self::$cron_cache[$file]['task'][$pid_file]['exec_time'] == $mission['exec_time'])
+                                        {
+                                            //已经有命令在执行,当前扫描跳过执行
+                                            continue;
+                                        }else
+                                        {
+                                            //未发现任何执行,将当前命令信息数组保存到缓存中
+                                            self::$cron_cache[$file]['task'][$pid_file] = $mission;
+                                            //正式执行
+                                            $this->runCrontab($mission['value'], $file, $line);
+                                        }
+                                    }else{
+                                        //首次执行写入缓存变量
+                                        self::$cron_cache[$file]['task'][$pid_file] = $mission;
+                                        $this->runCrontab($mission['value'], $file, $line);
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }else{
                 //定时任务组被停止,被禁止或被删除,从内存中清除
-                if(isset($this->cron_cache[$file]))
+                if(isset(self::$cron_cache[$file]))
                 {
-                    unset($this->cron_cache[$file]);
+                    unset(self::$cron_cache[$file]);
                 }
             }
         }
@@ -292,3 +311,4 @@ exec($value);';
         }
     }
 }
+

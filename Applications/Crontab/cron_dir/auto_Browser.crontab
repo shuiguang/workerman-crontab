@@ -1,2 +1,0 @@
-#自动断点任务
-* * * * * www  php Browser.php -u http%3A%2F%2Fwww.modulesoap.com%2FJump.php

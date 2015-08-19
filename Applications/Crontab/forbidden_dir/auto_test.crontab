@@ -1,2 +1,0 @@
-#断点自动任务
-* * * * * www  php D:/xampp/htdocs/test.php -u http%3A%2F%2F127.0.0.1%2Ftable.php

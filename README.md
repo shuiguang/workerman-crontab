@@ -32,6 +32,10 @@ chown -R www:www ./Applications/test.txt
 
 ./Applications/Crontab/cron_dir/ 该目录权限www用户只读不可写
 
+linux下添加开机自启动需要指定php绝对路径和启动脚本绝对路径,例如
+
+su - root -c "/usr/local/php/bin/php /www/workerman-crontab/start.php start -d"
+
 ## 移植
 ### windows到Linux（需要Linux的Workerman版本3.1.0及以上）
 可以直接将Applications下的应用目录拷贝到Linux版本的Applications下直接运行

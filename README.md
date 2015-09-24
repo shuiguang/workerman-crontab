@@ -38,7 +38,7 @@ linux下添加开机自启动需要指定php绝对路径和启动脚本绝对路
 
 当使用开机自启动时需要注意所有crontab命令和文件需使用绝对路径, 例如
 
-* * * * * /usr/local/php/bin/php /www/test.php
+\* * * * * /usr/local/php/bin/php /www/test.php
 
 ## 移植
 ### windows到Linux（需要Linux的Workerman版本3.1.0及以上）

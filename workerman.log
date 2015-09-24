@@ -4,3 +4,18 @@
 2015-08-19 16:18:12 Workerman[start.php] Stopping ...
 2015-08-19 16:18:12 Workerman[start.php] has been stopped
 2015-08-19 16:18:12 Workerman[start.php] stop success
+2015-09-24 12:38:29 Workerman[start.php] stop
+2015-09-24 12:38:29 Workerman[start.php] not run
+2015-09-24 12:38:29 Workerman[start.php] is stoping ...
+2015-09-24 12:38:29 Workerman[start.php] stop success
+2015-09-24 12:38:43 Workerman[/workerman-crontab/start.php] start
+2015-09-24 12:38:53 Workerman[start.php] stop
+2015-09-24 12:38:53 Workerman[start.php] not run
+2015-09-24 12:38:53 Workerman[start.php] is stoping ...
+2015-09-24 12:38:53 Workerman[start.php] stop success
+2015-09-24 12:39:33 Workerman[/workerman-crontab/start.php] start
+2015-09-24 12:40:52 Workerman[/workerman-crontab/start.php] stop
+2015-09-24 12:40:52 Workerman[/workerman-crontab/start.php] is stoping ...
+2015-09-24 12:40:52 Workerman[start.php] Stopping ...
+2015-09-24 12:40:52 Workerman[start.php] has been stopped
+2015-09-24 12:40:52 Workerman[/workerman-crontab/start.php] stop success

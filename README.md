@@ -12,9 +12,9 @@ Home page:[https://github.com/shuiguang/workerman-crontab](https://github.com/sh
 此版本可用于linux下生产使用
 
 ## 建议
-$webserver->user = 'www';	//建议使用权限较低的用户运行
+$webserver->user = 'www';   //建议使用权限较低的用户运行
 
-$worker->user = 'www';		//建议使用权限较低的用户运行
+$worker->user = 'www';      //建议使用权限较低的用户运行
 
 使用以上设置后需要将以下目录和文件的权限分配给www用户
 
@@ -34,7 +34,11 @@ chown -R www:www ./Applications/test.txt
 
 linux下添加开机自启动需要指定php绝对路径和启动脚本绝对路径,例如
 
-su - root -c "/usr/local/php/bin/php /www/workerman-crontab/start.php start -d"
+/usr/local/php/bin/php /www/workerman-crontab/start.php start -d
+
+当使用开机自启动时需要注意所有crontab命令和文件需使用绝对路径, 例如
+
+* * * * * /usr/local/php/bin/php /www/test.php
 
 ## 移植
 ### windows到Linux（需要Linux的Workerman版本3.1.0及以上）

@@ -303,10 +303,10 @@ exec($value);';
             //windows和linux下后台执行方式
             if(strtoupper(substr(PHP_OS,0,3)) == 'WIN')
             {
-                pclose(popen('start /B php '.$pid_file, 'r'));
+                pclose(popen('start /B '.Config::$exec_path.' '.$pid_file, 'r'));
             }else
             {
-                pclose(popen('php '.$pid_file.' > /dev/null &', 'r'));
+                pclose(popen(Config::$exec_path.' '.$pid_file.' > /dev/null &', 'r'));
             }
         }
     }

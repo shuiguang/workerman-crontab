@@ -43,6 +43,9 @@ class Config
     // 定时任务文件名后缀
     public static $cron_suffix = 'crontab';
     
+    // php程序所在完整路径,例如/usr/local/php/bin/php,设置完整路径才能开机自动启
+    public static $exec_path = 'php';
+    
     // 用于过滤定时任务中可能存在的用户名,当前用户会自动获取,最终执行用户为worker进程的用户
     public static $exec_user = array('root', 'www');
     

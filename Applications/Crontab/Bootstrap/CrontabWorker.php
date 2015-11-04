@@ -18,6 +18,12 @@ use Crontab\Config;
 class CrontabWorker extends Worker
 {
     /**
+     * 版本号
+     * @var string
+     */
+    const VERSION = '1.0.0';
+    
+    /**
      * remove the username in crontab command
      * 移除crontab语句中可能存在的用户名,如root,Admintrator
      * @var array

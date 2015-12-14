@@ -13,8 +13,6 @@
  */
 namespace Workerman\Connection;
 
-use Workerman\Events\Libevent;
-use Workerman\Events\Select;
 use Workerman\Events\EventInterface;
 use Workerman\Worker;
 use \Exception;
@@ -108,11 +106,11 @@ class AsyncTcpConnection extends TcpConnection
      */
     public function checkConnection($socket)
     {
-        // 删除连接可写监听
-        Worker::$globalEvent->del($this->_socket, EventInterface::EV_WRITE);
         // 需要判断两次连接是否已经断开
-        if(!feof($this->_socket) && !feof($this->_socket))
+        if(!feof($this->_socket) && !feof($this->_socket) && is_resource($this->_socket))
         {
+            // 删除连接可写监听
+            Worker::$globalEvent->del($this->_socket, EventInterface::EV_WRITE);
             // 设置非阻塞
             stream_set_blocking($this->_socket, 0);
             // 监听可读事件
@@ -124,6 +122,8 @@ class AsyncTcpConnection extends TcpConnection
             }
             // 标记状态为连接已经建立
             $this->_status = self::STATUS_ESTABLISH;
+            // 获得远端实际ip端口
+            $this->_remoteAddress = stream_socket_get_name($this->_socket, true);
             // 如果有设置onConnect回调，则执行
             if($this->onConnect)
             {
@@ -140,11 +140,12 @@ class AsyncTcpConnection extends TcpConnection
         }
         else
         {
-            $this->_status = self::STATUS_CLOSED;
-            // 关闭socket
-            @fclose($this->_socket);
             // 连接未建立成功
             $this->emitError(WORKERMAN_CONNECT_FAIL, 'connect fail');
+            // 触发onClsoe
+            $this->destroy();
+            // 清理onConnect回调
+            $this->onConnect = null;
         }
     }
 }

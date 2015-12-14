@@ -52,7 +52,7 @@ function check_auth()
  */
 function _session_start()
 {
-    if(defined('WORKERMAN_ROOT_DIR'))
+    if(class_exists('\Workerman\Worker'))
     {
         return Http::sessionStart();
     }
@@ -64,7 +64,7 @@ function _session_start()
  */
 function _exit($str = '')
 {
-    if(defined('WORKERMAN_ROOT_DIR'))
+    if(class_exists('\Workerman\Worker'))
     {
         return Http::end($str);
     }
@@ -76,7 +76,7 @@ function _exit($str = '')
  */
 function _header($content, $replace = true, $http_response_code = 0)
 {
-    if(!defined('WORKERMAN_ROOT_DIR'))
+    if(!class_exists('\Workerman\Worker'))
     {
         return header($content, $replace, $http_response_code);
     }
@@ -94,7 +94,7 @@ function _header($content, $replace = true, $http_response_code = 0)
  * @param bool $HTTPOnly
  */
 function _setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
-	if(!defined('WORKERMAN_ROOT_DIR'))
+	if(!class_exists('\Workerman\Worker'))
     {
         return setcookie($name, $value, $maxage, $path, $domain, $secure, $HTTPOnly);
     }

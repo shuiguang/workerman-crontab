@@ -72,7 +72,7 @@ class Http
         $_POST = $_GET = $_COOKIE = $_REQUEST = $_SESSION = $_FILES =  array();
         $GLOBALS['HTTP_RAW_POST_DATA'] = '';
         // 清空上次的数据
-        HttpCache::$header = array();
+        HttpCache::$header = array('Connection'=>'Connection: keep-alive');
         HttpCache::$instance = new HttpCache();
         // 需要设置的变量名
         $_SERVER = array (
@@ -446,7 +446,7 @@ class Http
      /**
      * 解析$_FILES
      */
-    protected function parseUploadFiles($http_body, $http_post_boundary)
+    protected static function parseUploadFiles($http_body, $http_post_boundary)
     {
         $http_body = substr($http_body, 0, strlen($http_body) - (strlen($http_post_boundary) + 4));
         $boundary_data_array = explode($http_post_boundary."\r\n", $http_body);

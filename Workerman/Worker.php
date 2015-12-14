@@ -13,6 +13,8 @@
  */
 namespace Workerman;
 
+require_once __DIR__.'/Lib/Constants.php';
+
 use \Workerman\Events\Libevent;
 use \Workerman\Events\Select;
 use \Workerman\Events\EventInterface;
@@ -20,7 +22,6 @@ use \Workerman\Connection\ConnectionInterface;
 use \Workerman\Connection\TcpConnection;
 use \Workerman\Connection\UdpConnection;
 use \Workerman\Lib\Timer;
-use \Workerman\Autoloader;
 use \Exception;
 
 /**
@@ -33,7 +34,7 @@ class Worker
      * 版本号
      * @var string
      */
-    const VERSION = '3.1.5';
+    const VERSION = '3.2.5';
     
     /**
      * 状态 启动中
@@ -79,6 +80,12 @@ class Worker
     const MAX_UDP_PACKEG_SIZE = 65535;
     
     /**
+     * worker id
+     * @var int
+     */
+    public $id = 0;
+    
+    /**
      * worker的名称，用于在运行status命令时标记进程
      * @var string
      */
@@ -101,6 +108,12 @@ class Worker
      * @var bool
      */
     public $reloadable = true;
+
+    /**
+     * reuse port
+     * @var bool
+     */
+    public $reusePort = false;
     
     /**
      * 当worker进程启动时，如果设置了$onWorkerStart回调函数，则运行
@@ -154,6 +167,12 @@ class Worker
     public $onWorkerStop = null;
     
     /**
+     * 当收到reload命令时的回调函数
+     * @var callback
+     */
+    public $onWorkerReload = null;
+    
+    /**
      * 传输层协议
      * @var string
      */
@@ -204,7 +223,7 @@ class Worker
      * 日志目录，默认在workerman根目录下，与Applications同级
      * 可以手动设置
      * 例如 Worker::$logFile = '/tmp/workerman.log';
-     * @var unknown_type
+     * @var mixed
      */
     public static $logFile = '';
     
@@ -222,7 +241,7 @@ class Worker
     
     /**
      * 监听的socket
-     * @var stream
+     * @var resource
      */
     protected $_mainSocket = null;
     
@@ -235,7 +254,7 @@ class Worker
     
     /**
      * socket的上下文，具体选项设置可以在初始化worker时传递
-     * @var context
+     * @var array
      */
     protected $_context = null;
     
@@ -258,6 +277,13 @@ class Worker
      * @var array
      */
     protected static $_pidsToRestart = array();
+    
+    /**
+     * 所有进程pid到id的映射
+     * 格式为[worker_id=>[0=>$pid, 1=>$pid, ..], ..]
+     * @var array
+     */
+    protected static $_idMap = array();
     
     /**
      * 当前worker状态
@@ -322,14 +348,14 @@ class Worker
         self::initWorkers();
         //  初始化所有信号处理函数
         self::installSignal();
-        // 展示启动界面
-        self::displayUI();
-        // 尝试重定向标准输入输出
-        self::resetStd();
         // 保存主进程pid
         self::saveMasterPid();
         // 创建子进程（worker进程）并运行
         self::forkWorkers();
+        // 展示启动界面
+        self::displayUI();
+        // 尝试重定向标准输入输出
+        self::resetStd();
         // 监控所有子进程（worker进程）
         self::monitorWorkers();
     }
@@ -338,14 +364,14 @@ class Worker
      * 初始化一些环境变量
      * @return void
      */
-    public static function init()
+    protected static function init()
     {
         // 如果没设置$pidFile，则生成默认值
         if(empty(self::$pidFile))
         {
             $backtrace = debug_backtrace();
             self::$_startFile = $backtrace[count($backtrace)-1]['file'];
-            self::$pidFile = sys_get_temp_dir()."/workerman.".str_replace('/', '_', self::$_startFile).".pid";
+            self::$pidFile = __DIR__ . "/../".str_replace('/', '_', self::$_startFile).".pid";
         }
         // 没有设置日志文件，则生成一个默认值
         if(empty(self::$logFile))
@@ -360,7 +386,8 @@ class Worker
         self::$_statisticsFile = sys_get_temp_dir().'/workerman.status';
         // 尝试设置进程名称（需要php>=5.5或者安装了proctitle扩展）
         self::setProcessTitle('WorkerMan: master process  start_file=' . self::$_startFile);
-        
+        // 初始化id
+        self::initId();
         // 初始化定时器
         Timer::init();
     }
@@ -371,6 +398,7 @@ class Worker
      */
     protected static function initWorkers()
     {
+        /** @var static $worker */
         foreach(self::$_workers as $worker)
         {
             // 没有设置worker名称，则使用none代替
@@ -400,8 +428,24 @@ class Worker
             {
                 self::$_maxUserNameLength = $user_name_length;
             }
-            // 监听端口
-            $worker->listen();
+            // 如果端口不可复用，则直接在主进程就监听
+            if(!$worker->reusePort)
+            {
+                // 监听端口
+                $worker->listen();
+            }
+        }
+    }
+    
+    /**
+     * 初始化idMap
+     * return void
+     */
+    protected static function initId()
+    {
+        foreach(self::$_workers as $worker_id=>$worker)
+        {
+            self::$_idMap[$worker_id] = array_fill(0, $worker->count, 0);
         }
     }
     
@@ -425,11 +469,22 @@ class Worker
         echo 'Workerman version:' , Worker::VERSION , "          PHP version:",PHP_VERSION,"\n";
         echo "------------------------\033[47;30m WORKERS \033[0m-------------------------------\n";
         echo "\033[47;30muser\033[0m",str_pad('', self::$_maxUserNameLength+2-strlen('user')), "\033[47;30mworker\033[0m",str_pad('', self::$_maxWorkerNameLength+2-strlen('worker')), "\033[47;30mlisten\033[0m",str_pad('', self::$_maxSocketNameLength+2-strlen('listen')), "\033[47;30mprocesses\033[0m \033[47;30m","status\033[0m\n";
+        /** @var static $worker */
         foreach(self::$_workers as $worker)
         {
             echo str_pad($worker->user, self::$_maxUserNameLength+2),str_pad($worker->name, self::$_maxWorkerNameLength+2),str_pad($worker->getSocketName(), self::$_maxSocketNameLength+2), str_pad(' '.$worker->count, 9), " \033[32;40m [OK] \033[0m\n";;
         }
         echo "----------------------------------------------------------------\n";
+        if(self::$daemonize)
+        {
+            global $argv;
+            $start_file = $argv[0];
+            echo "Input \"php $start_file stop\" to quit. Start success.\n";
+        }
+        else
+        {
+            echo "Press Ctrl-C to quit. Start success.\n";
+        }
     }
     
     /**
@@ -437,14 +492,14 @@ class Worker
      * php yourfile.php start | stop | restart | reload | status
      * @return void
      */
-    public static function parseCommand()
+    protected static function parseCommand()
     {
         // 检查运行命令的参数
         global $argv;
         $start_file = $argv[0]; 
         if(!isset($argv[1]))
         {
-            exit("Usage: php yourfile.php {start|stop|restart|reload|status}\n");
+            exit("Usage: php yourfile.php {start|stop|restart|reload|status|kill}\n");
         }
         
         // 命令
@@ -454,7 +509,19 @@ class Worker
         $command2 = isset($argv[2]) ? $argv[2] : '';
         
         // 记录日志
-        self::log("Workerman[$start_file] $command");
+        $mode = '';
+        if($command === 'start')
+        {
+            if($command2 === '-d')
+            {
+                $mode = 'in DAEMON mode';
+            }
+            else
+            {
+                $mode = 'in DEBUG mode';
+            }
+        }
+        self::log("Workerman[$start_file] $command $mode");
         
         // 检查主进程是否在运行
         $master_pid = @file_get_contents(self::$pidFile);
@@ -463,7 +530,8 @@ class Worker
         {
             if($command === 'start')
             {
-                self::log("Workerman[$start_file] is running");
+                self::log("Workerman[$start_file] already running");
+                exit;
             }
         }
         elseif($command !== 'start' && $command !== 'restart')
@@ -474,6 +542,10 @@ class Worker
         // 根据命令做相应处理
         switch($command)
         {
+            case 'kill':
+                exec("ps aux | grep $start_file | grep -v grep | awk '{print $2}' |xargs kill -SIGINT");
+                exec("ps aux | grep $start_file | grep -v grep | awk '{print $2}' |xargs kill -SIGKILL");
+                break;
             // 启动 workerman
             case 'start':
                 if($command2 === '-d')
@@ -542,7 +614,7 @@ class Worker
                 exit;
             // 未知命令
             default :
-                 exit("Usage: php yourfile.php {start|stop|restart|reload|status}\n");
+                 exit("Usage: php yourfile.php {start|stop|restart|reload|status|kill}\n");
         }
     }
     
@@ -554,8 +626,6 @@ class Worker
     {
         // stop
         pcntl_signal(SIGINT,  array('\Workerman\Worker', 'signalHandler'), false);
-        pcntl_signal(SIGSTOP,  array('\Workerman\Worker', 'signalHandler'), false);
-        
         // reload
         pcntl_signal(SIGUSR1, array('\Workerman\Worker', 'signalHandler'), false);
         // status
@@ -572,8 +642,6 @@ class Worker
     {
         // uninstall stop signal handler
         pcntl_signal(SIGINT,  SIG_IGN, false);
-        pcntl_signal(SIGSTOP,  SIG_IGN, false);
-        
         // uninstall reload signal handler
         pcntl_signal(SIGUSR1, SIG_IGN, false);
         // uninstall  status signal handler
@@ -596,12 +664,11 @@ class Worker
         {
             // stop
             case SIGINT:
-            case SIGSTOP:
                 self::stopAll();
                 break;
             // reload
             case SIGUSR1:
-                self::$_pidsToRestart = self::getAllWorkerPids();;
+                self::$_pidsToRestart = self::getAllWorkerPids();
                 self::reload();
                 break;
             // show status
@@ -692,7 +759,7 @@ class Worker
      */
     protected static function getAllWorkerPids()
     {
-        $pid_array = array(); 
+        $pid_array = array();
         foreach(self::$_pidMap as $worker_pid_array)
         {
             foreach($worker_pid_array as $worker_pid)
@@ -709,6 +776,7 @@ class Worker
      */
     protected static function forkWorkers()
     {
+        /** @var static $worker */
         foreach(self::$_workers as $worker)
         {
             // 启动过程中需要得到运行用户名的最大长度，在status时格式化展示
@@ -728,7 +796,7 @@ class Worker
             // 创建子进程
             while(count(self::$_pidMap[$worker->workerId]) < $worker->count)
             {
-                self::forkOneWorker($worker);
+                static::forkOneWorker($worker);
             }
         }
     }
@@ -741,19 +809,33 @@ class Worker
     protected static function forkOneWorker($worker)
     {
         $pid = pcntl_fork();
+        // 获得可用的id
+        $id = self::getId($worker->workerId, 0);
         // 主进程记录子进程pid
         if($pid > 0)
         {
             self::$_pidMap[$worker->workerId][$pid] = $pid;
+            self::$_idMap[$worker->workerId][$id] = $pid;
         }
         // 子进程运行
         elseif(0 === $pid)
         {
+            // 如果设置了端口复用，则在子进程执行监听
+            if($worker->reusePort)
+            {
+                $worker->listen();
+            }
+            // 启动过程中尝试重定向标准输出
+            if(self::$_status === self::STATUS_STARTING)
+            {
+                self::resetStd();
+            }
             self::$_pidMap = array();
             self::$_workers = array($worker->workerId => $worker);
             Timer::delAll();
             self::setProcessTitle('WorkerMan: worker process  ' . $worker->name . ' ' . $worker->getSocketName());
             self::setProcessUser($worker->user);
+            $worker->id = $id;
             $worker->run();
             exit(250);
         }
@@ -764,8 +846,24 @@ class Worker
     }
     
     /**
+     * 获得可用的worker->id，以便传递给子进程
+     * @param int $worker_id
+     * @param int $pid
+     */
+    protected static function getId($worker_id, $pid)
+    {
+        $id = array_search($pid, self::$_idMap[$worker_id]);
+        if($id === false)
+        {
+            echo "getId fail\n";
+        }
+        return $id;
+    }
+
+    /**
      * 尝试设置运行当前进程的用户
-     * @return void
+     *
+     * @param $user_name
      */
     protected static function setProcessUser($user_name)
     {
@@ -778,7 +876,7 @@ class Worker
         {
             if(!posix_setgid($user_info['gid']) || !posix_setuid($user_info['uid']))
             {
-                self::log( 'Notice : Can not run woker as '.$user_name." , You shuld be root\n", true);
+                self::log( 'Notice : Can not run woker as '.$user_name." , You should be root\n", true);
             }
         }
     }
@@ -818,6 +916,8 @@ class Worker
             // 挂起进程，直到有子进程退出或者被信号打断
             $status = 0;
             $pid = pcntl_wait($status, WUNTRACED);
+            // 如果有信号到来，尝试触发信号处理函数
+            pcntl_signal_dispatch();
             // 有子进程退出
             if($pid > 0)
             {
@@ -842,6 +942,10 @@ class Worker
                         
                         // 清除子进程信息
                         unset(self::$_pidMap[$worker_id][$pid]);
+                        
+                        // 标记$id为可用id
+                        $id = self::getId($worker_id, $pid);
+                        self::$_idMap[$worker_id][$id] = 0;
                         
                         break;
                     }
@@ -916,6 +1020,14 @@ class Worker
                         $reloadable_pid_array[$pid] = $pid;
                     }
                 }
+                else
+                {
+                    foreach($worker_pid_array as $pid)
+                    {
+                        // 给reloadable=false的进程也发送一个reload信号，触发onWorkerReload
+                        posix_kill($pid, SIGUSR1);
+                    }
+                }
             }
             
             // 得到所有可以重启的进程
@@ -942,6 +1054,11 @@ class Worker
         {
             // 如果当前worker的reloadable属性为真，则执行退出
             $worker = current(self::$_workers);
+            // 如果有设置Reload回调，则执行
+            if($worker->onWorkerReload)
+            {
+                call_user_func($worker->onWorkerReload, $worker);
+            }
             if($worker->reloadable)
             {
                 self::stopAll();
@@ -972,6 +1089,7 @@ class Worker
         else
         {
             // 执行stop逻辑
+            /** @var static $worker */
             foreach(self::$_workers as $worker)
             {
                 $worker->stop();
@@ -1103,17 +1221,18 @@ class Worker
     protected static function log($msg)
     {
         $msg = $msg."\n";
-        if(self::$_status === self::STATUS_STARTING || !self::$daemonize)
+        if(!self::$daemonize)
         {
             echo $msg;
         }
         file_put_contents(self::$logFile, date('Y-m-d H:i:s') . " " . $msg, FILE_APPEND | LOCK_EX);
     }
-    
+
     /**
      * worker构造函数
+     *
      * @param string $socket_name
-     * @return void
+     * @param array  $context_option
      */
     public function __construct($socket_name = '', $context_option = array())
     {
@@ -1136,6 +1255,9 @@ class Worker
             }
             $this->_context = stream_context_create($context_option);
         }
+        
+        // 设置一个空的onMessage，当onMessage未设置时用来消费socket数据
+        $this->onMessage = function(){};
     }
     
     /**
@@ -1144,13 +1266,14 @@ class Worker
      */
     public function listen()
     {
-        // 设置自动加载根目录
-        Autoloader::setRootPath($this->_appInitPath);
-        
-        if(!$this->_socketName)
+        if(!$this->_socketName || $this->_mainSocket)
         {
             return;
         }
+ 
+        // 设置自动加载根目录  
+        Autoloader::setRootPath($this->_appInitPath);
+
         // 获得应用层通讯协议以及监听的地址
         list($scheme, $address) = explode(':', $this->_socketName, 2);
         // 如果有指定应用层协议，则检查对应的协议类是否存在
@@ -1174,6 +1297,13 @@ class Worker
         
         // flag
         $flags =  $this->transport === 'udp' ? STREAM_SERVER_BIND : STREAM_SERVER_BIND | STREAM_SERVER_LISTEN;
+        $errno = 0;
+        $errmsg = '';
+        // 如果设置了端口复用，则设置SO_REUSEPORT选项为1
+        if($this->reusePort)
+        {
+            stream_context_set_option($this->_context, 'socket', 'so_reuseport', 1);
+        }
         $this->_mainSocket = stream_socket_server($this->transport.":".$address, $errno, $errmsg, $flags, $this->_context);
         if(!$this->_mainSocket)
         {
@@ -1219,6 +1349,9 @@ class Worker
      */
     public function run()
     {
+        //更新 Worker 状态
+        self::$_status = self::STATUS_RUNNING;
+        
         // 注册进程退出回调，用来检查是否有错误
         register_shutdown_function(array("\\Workerman\\Worker", 'checkErrors'));
         
@@ -1284,13 +1417,13 @@ class Worker
 
     /**
      * 接收一个客户端连接
-     * @param resources $socket
+     * @param resource $socket
      * @return void
      */
     public function acceptConnection($socket)
     {
         // 获得客户端连接
-        $new_socket = @stream_socket_accept($socket, 0);
+        $new_socket = @stream_socket_accept($socket, 0, $remote_address);
         // 惊群现象，忽略
         if(false === $new_socket)
         {
@@ -1298,7 +1431,8 @@ class Worker
         }
         
         // 初始化连接对象
-        $connection = new TcpConnection($new_socket);
+        $connection = new TcpConnection($new_socket, $remote_address);
+        $this->connections[$connection->id] = $connection;
         $connection->worker = $this;
         $connection->protocol = $this->_protocol;
         $connection->onMessage = $this->onMessage;
@@ -1306,7 +1440,6 @@ class Worker
         $connection->onError = $this->onError;
         $connection->onBufferDrain = $this->onBufferDrain;
         $connection->onBufferFull = $this->onBufferFull;
-        $this->connections[(int)$new_socket] = $connection;
         
         // 如果有设置连接回调，则执行
         if($this->onConnect)
@@ -1322,10 +1455,12 @@ class Worker
             }
         }
     }
-    
+
     /**
      * 处理udp连接（udp其实是无连接的，这里为保证和tcp连接接口一致）
+     *
      * @param resource $socket
+     * @return bool
      */
     public function acceptUdpConnection($socket)
     {
@@ -1340,6 +1475,7 @@ class Worker
         {
             if($this->_protocol)
             {
+                /** @var \Workerman\Protocols\ProtocolInterface $parser */
                 $parser = $this->_protocol;
                 $recv_buffer = $parser::decode($recv_buffer, $connection);
             }

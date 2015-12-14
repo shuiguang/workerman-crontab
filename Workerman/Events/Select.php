@@ -90,7 +90,7 @@ class Select implements EventInterface
      * 添加事件及处理函数
      * @see Events\EventInterface::add()
      */
-    public function add($fd, $flag, $func, $args = null)
+    public function add($fd, $flag, $func, $args = array())
     {
         switch ($flag)
         {
@@ -114,7 +114,7 @@ class Select implements EventInterface
                 // $fd 为 定时的时间间隔，单位为秒，支持小数，能精确到0.001秒
                 $run_time = microtime(true)+$fd;
                 $this->_scheduler->insert($this->_timerId, -$run_time);
-                $this->_task[$this->_timerId] = array($func, $args, $flag, $fd);
+                $this->_task[$this->_timerId] = array($func, (array)$args, $flag, $fd);
                 $this->tick();
                 return $this->_timerId++;
         }
@@ -246,6 +246,12 @@ class Select implements EventInterface
             // 等待可读或者可写事件
             @stream_select($read, $write, $e, 0, $this->_selectTimeout);
             
+            // 尝试执行定时任务
+            if(!$this->_scheduler->isEmpty())
+            {
+                $this->tick();
+            }
+            
             // 这些描述符可读，执行对应描述符的读回调函数
             if($read)
             {
@@ -270,12 +276,6 @@ class Select implements EventInterface
                         call_user_func_array($this->_allEvents[$fd_key][self::EV_WRITE][0], array($this->_allEvents[$fd_key][self::EV_WRITE][1]));
                     }
                 }
-            }
-            
-            // 尝试执行定时任务
-            if(!$this->_scheduler->isEmpty())
-            {
-                $this->tick();
             }
         }
     }

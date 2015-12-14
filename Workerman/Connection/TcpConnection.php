@@ -13,8 +13,6 @@
  */
 namespace Workerman\Connection;
 
-use Workerman\Events\Libevent;
-use Workerman\Events\Select;
 use Workerman\Events\EventInterface;
 use Workerman\Worker;
 use \Exception;
@@ -28,7 +26,7 @@ class TcpConnection extends ConnectionInterface
      * 当数据可读时，从socket缓冲区读取多少字节数据
      * @var int
      */
-    const READ_BUFFER_SIZE = 8192;
+    const READ_BUFFER_SIZE = 65535;
 
     /**
      * 连接状态 连接中
@@ -105,6 +103,12 @@ class TcpConnection extends ConnectionInterface
     public $id = 0;
     
     /**
+     * 连接的id，为$id的副本，用来清理connections中的连接
+     * @var int
+     */
+    protected $_id = 0;
+    
+    /**
      * 设置当前连接的最大发送缓冲区大小，默认大小为TcpConnection::$defaultMaxSendBufferSize
      * 当发送缓冲区满时，会尝试触发onBufferFull回调（如果有设置的话）
      * 如果没设置onBufferFull回调，由于发送缓冲区满，则后续发送的数据将被丢弃，
@@ -166,18 +170,6 @@ class TcpConnection extends ConnectionInterface
     protected $_status = self::STATUS_ESTABLISH;
     
     /**
-     * 对端ip
-     * @var string
-     */
-    protected $_remoteIp = '';
-    
-    /**
-     * 对端端口
-     * @var int
-     */
-    protected $_remotePort = 0;
-    
-    /**
      * 对端的地址 ip+port
      * 值类似于 192.168.1.100:3698
      * @var string
@@ -195,15 +187,16 @@ class TcpConnection extends ConnectionInterface
      * @param resource $socket
      * @param EventInterface $event
      */
-    public function __construct($socket)
+    public function __construct($socket, $remote_address)
     {
         // 统计数据
         self::$statistics['connection_count']++;
-        $this->id = self::$_idRecorder++;
+        $this->id = $this->_id = self::$_idRecorder++;
         $this->_socket = $socket;
         stream_set_blocking($this->_socket, 0);
         Worker::$globalEvent->add($this->_socket, EventInterface::EV_READ, array($this, 'baseRead'));
         $this->maxSendBufferSize = self::$defaultMaxSendBufferSize;
+        $this->_remoteAddress = $remote_address;
     }
     
     /**
@@ -214,6 +207,17 @@ class TcpConnection extends ConnectionInterface
      */
     public function send($send_buffer, $raw = false)
     {
+        // 如果没有设置以原始数据发送，并且有设置协议则按照协议编码
+        if(false === $raw && $this->protocol)
+        {
+            $parser = $this->protocol;
+            $send_buffer = $parser::encode($send_buffer, $this);
+            if($send_buffer === '')
+            {
+                return null;
+            }
+        }
+        
         // 如果当前状态是连接中，则把数据放入发送缓冲区
         if($this->_status === self::STATUS_CONNECTING)
         {
@@ -226,12 +230,6 @@ class TcpConnection extends ConnectionInterface
             return false;
         }
         
-        // 如果没有设置以原始数据发送，并且有设置协议则按照协议编码
-        if(false === $raw && $this->protocol)
-        {
-            $parser = $this->protocol;
-            $send_buffer = $parser::encode($send_buffer, $this);
-        }
         // 如果发送缓冲区为空，尝试直接发送
         if($this->_sendBuffer === '')
         {
@@ -251,7 +249,7 @@ class TcpConnection extends ConnectionInterface
             else
             {
                 // 如果连接断开
-                if(feof($this->_socket))
+                if(!is_resource($this->_socket) || feof($this->_socket))
                 {
                     // status统计发送失败次数
                     self::$statistics['send_fail']++;
@@ -314,16 +312,12 @@ class TcpConnection extends ConnectionInterface
      */
     public function getRemoteIp()
     {
-        if(!$this->_remoteIp)
+        $pos = strrpos($this->_remoteAddress, ':');
+        if($pos)
         {
-            $this->_remoteAddress = stream_socket_get_name($this->_socket, true);
-            if($this->_remoteAddress)
-            {
-                list($this->_remoteIp, $this->_remotePort) = explode(':', $this->_remoteAddress, 2);
-                $this->_remotePort = (int)$this->_remotePort;
-            }
+            return substr($this->_remoteAddress, 0, $pos);
         }
-        return $this->_remoteIp;
+        return '';
     }
     
     /**
@@ -332,16 +326,11 @@ class TcpConnection extends ConnectionInterface
      */
     public function getRemotePort()
     {
-        if(!$this->_remotePort)
+        if($this->_remoteAddress)
         {
-            $this->_remoteAddress = stream_socket_get_name($this->_socket, true);
-            if($this->_remoteAddress)
-            {
-                list($this->_remoteIp, $this->_remotePort) = explode(':', $this->_remoteAddress, 2);
-                $this->_remotePort = (int)$this->_remotePort;
-            }
+            return (int)substr(strrchr($this->_remoteAddress, ':'), 1);
         }
-        return $this->_remotePort;
+        return 0;
     }
     
     /**
@@ -375,37 +364,50 @@ class TcpConnection extends ConnectionInterface
      */
     public function baseRead($socket)
     {
-        if(!is_resource($socket) || feof($socket))
+        $read_data = false;
+        while(1)
+        {
+            $buffer = fread($socket, self::READ_BUFFER_SIZE);
+            if($buffer === '' || $buffer === false)
+            {
+                break;
+            }
+            $read_data = true;
+            $this->_recvBuffer .= $buffer;
+        }
+        
+        // 没有读到数据时检查连接是否断开
+        if(!$read_data && (!is_resource($socket) || feof($socket)))
         {
             $this->destroy();
             return;
         }
-       while(1)
-       {
-           $buffer = fread($socket, self::READ_BUFFER_SIZE);
-           if($buffer === '' || $buffer === false)
+        
+        // 如果设置了协议
+        if($this->protocol)
+        {
+           $parser = $this->protocol;
+           while($this->_recvBuffer !== '' && !$this->_isPaused)
            {
-               break;
-           }
-           $this->_recvBuffer .= $buffer; 
-       }
-       
-       if($this->_recvBuffer)
-       {
-           if(!$this->onMessage)
-           {
-               $this->_recvBuffer = '';
-               return ;
-           }
-           
-           // 如果设置了协议
-           if($this->protocol)
-           {
-               $parser = $this->protocol;
-               while($this->_recvBuffer && !$this->_isPaused)
+               // 当前包的长度已知
+               if($this->_currentPackageLength)
                {
-                   // 当前包的长度已知
-                   if($this->_currentPackageLength)
+                   // 数据不够一个包
+                   if($this->_currentPackageLength > strlen($this->_recvBuffer))
+                   {
+                       break;
+                   }
+               }
+               else
+               {
+                   // 获得当前包长
+                   $this->_currentPackageLength = $parser::input($this->_recvBuffer, $this);
+                   // 数据不够，无法获得包长
+                   if($this->_currentPackageLength === 0)
+                   {
+                       break;
+                   }
+                   elseif($this->_currentPackageLength > 0 && $this->_currentPackageLength <= self::$maxPackageSize)
                    {
                        // 数据不够一个包
                        if($this->_currentPackageLength > strlen($this->_recvBuffer))
@@ -413,75 +415,73 @@ class TcpConnection extends ConnectionInterface
                            break;
                        }
                    }
+                   // 包错误
                    else
                    {
-                       // 获得当前包长
-                       $this->_currentPackageLength = $parser::input($this->_recvBuffer, $this);
-                       // 数据不够，无法获得包长
-                       if($this->_currentPackageLength === 0)
-                       {
-                           break;
-                       }
-                       elseif($this->_currentPackageLength > 0 && $this->_currentPackageLength <= self::$maxPackageSize)
-                       {
-                           // 数据不够一个包
-                           if($this->_currentPackageLength > strlen($this->_recvBuffer))
-                           {
-                               break;
-                           }
-                       }
-                       // 包错误
-                       else
-                       {
-                           $this->close('error package. package_length='.var_export($this->_currentPackageLength, true));
-                           return;
-                       }
-                   }
-                   
-                   // 数据足够一个包长
-                   self::$statistics['total_request']++;
-                   // 当前包长刚好等于buffer的长度
-                   if(strlen($this->_recvBuffer) === $this->_currentPackageLength)
-                   {
-                       $one_request_buffer = $this->_recvBuffer;
-                       $this->_recvBuffer = '';
-                   }
-                   else
-                   {
-                       // 从缓冲区中获取一个完整的包
-                       $one_request_buffer = substr($this->_recvBuffer, 0, $this->_currentPackageLength);
-                       // 将当前包从接受缓冲区中去掉
-                       $this->_recvBuffer = substr($this->_recvBuffer, $this->_currentPackageLength);
-                   }
-                   // 重置当前包长为0
-                   $this->_currentPackageLength = 0;
-                   // 处理数据包
-                   try
-                   {
-                       call_user_func($this->onMessage, $this, $parser::decode($one_request_buffer, $this));
-                   }
-                   catch(Exception $e)
-                   {
-                       self::$statistics['throw_exception']++;
-                       echo $e;
+                       echo 'error package. package_length='.var_export($this->_currentPackageLength, true);
+                       $this->destroy();
+                       return;
                    }
                }
-               return;
+               
+               // 数据足够一个包长
+               self::$statistics['total_request']++;
+               // 当前包长刚好等于buffer的长度
+               if(strlen($this->_recvBuffer) === $this->_currentPackageLength)
+               {
+                   $one_request_buffer = $this->_recvBuffer;
+                   $this->_recvBuffer = '';
+               }
+               else
+               {
+                   // 从缓冲区中获取一个完整的包
+                   $one_request_buffer = substr($this->_recvBuffer, 0, $this->_currentPackageLength);
+                   // 将当前包从接受缓冲区中去掉
+                   $this->_recvBuffer = substr($this->_recvBuffer, $this->_currentPackageLength);
+               }
+               // 重置当前包长为0
+               $this->_currentPackageLength = 0;
+               if(!$this->onMessage)
+               {
+                   continue ;
+               }
+               // 处理数据包
+               try
+               {
+                   call_user_func($this->onMessage, $this, $parser::decode($one_request_buffer, $this));
+               }
+               catch(Exception $e)
+               {
+                   self::$statistics['throw_exception']++;
+                   echo $e;
+               }
            }
-           // 没有设置协议，则直接把接收的数据当做一个包处理
-           self::$statistics['total_request']++;
-           try 
-           {
-               call_user_func($this->onMessage, $this, $this->_recvBuffer);
-           }
-           catch(Exception $e)
-           {
-               self::$statistics['throw_exception']++;
-               echo $e;
-           }
-           // 清空缓冲区
-           $this->_recvBuffer = '';
-       }
+           return;
+        }
+        
+        if($this->_recvBuffer === '' || $this->_isPaused)
+        {
+            return;
+        }
+        
+        // 没有设置协议，则直接把接收的数据当做一个包处理
+        self::$statistics['total_request']++;
+        if(!$this->onMessage)
+        {
+            $this->_recvBuffer = '';
+            return ;
+        }
+        try 
+        {
+           call_user_func($this->onMessage, $this, $this->_recvBuffer);
+        }
+        catch(Exception $e)
+        {
+           self::$statistics['throw_exception']++;
+           echo $e;
+        }
+        // 清空缓冲区
+        $this->_recvBuffer = '';
     }
 
     /**
@@ -518,14 +518,37 @@ class TcpConnection extends ConnectionInterface
         {
            $this->_sendBuffer = substr($this->_sendBuffer, $len);
         }
+        // 可写但是写失败，说明连接断开
         else
         {
-           if(feof($this->_socket))
-           {
-               self::$statistics['send_fail']++;
-               $this->destroy();
-           }
+            self::$statistics['send_fail']++;
+            $this->destroy();
         }
+    }
+    
+    /**
+     * 管道重定向
+     * @return void
+     */
+    public function pipe($dest)
+    {
+        $source = $this;
+        $this->onMessage = function($source, $data)use($dest)
+        {
+            $dest->send($data);
+        };
+        $this->onClose = function($source)use($dest)
+        {
+            $dest->destroy();
+        };
+        $dest->onBufferFull = function($dest)use($source)
+        {
+            $source->pauseRecv();
+        };
+        $dest->onBufferDrain = function($dest)use($source)
+        {
+            $source->resumeRecv();
+        };
     }
     
     /**
@@ -612,7 +635,7 @@ class TcpConnection extends ConnectionInterface
         // 从连接中删除
         if($this->worker)
         {
-            unset($this->worker->connections[(int)$this->_socket]);
+            unset($this->worker->connections[$this->_id]);
         }
         // 标记该连接已经关闭
        $this->_status = self::STATUS_CLOSED;
@@ -629,6 +652,8 @@ class TcpConnection extends ConnectionInterface
                echo $e;
            }
        }
+       // 清理回调，避免内存泄露
+       $this->onMessage = $this->onClose = $this->onError = $this->onBufferFull = $this->onBufferDrain = null;
     }
     
     /**

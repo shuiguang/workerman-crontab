@@ -1,48 +1,35 @@
 # workerman-crontab-for-linux
 workerman-crontab-for-linux
-## 运行
+
+## 运行环境要求
 (php>=5.3.3)
-php start.php start -d(需要设置系统php环境变量)
 
 PHP必须支持exec函数
 
-Home page:[https://github.com/shuiguang/workerman-crontab](https://github.com/shuiguang/workerman-crontab)
+## 启动守护进程
+```sh
+/usr/local/php/bin/php /www/workerman-crontab/start.php start -d
+```
+
+## 创建新的定时任务组
+如果需要添加一组定时任务，组名为job1，那么可以在./Applications/Crontab/cron_dir/下创建job1.crontab，内容如下：
+```sh
+#案例1：每天22:00执行一次shell脚本
+00 22 * * * www /www/cut-logs
+#案例2：每分钟执行一次php脚本
+* * * * * www /usr/local/php/bin/php /www/test.php
+```
+
+## 启动新添加的定时任务组
+使用浏览器访问
+http://您的IP地址:5566/
+启动刚才添加的job1.crontab任务。
+
+## Home page
+[https://github.com/shuiguang/workerman-crontab](https://github.com/shuiguang/workerman-crontab)
 
 ## 说明
 此版本可用于linux下生产使用
-
-## 建议
-$webserver->user = 'www';   //建议使用权限较低的用户运行
-
-$worker->user = 'www';      //建议使用权限较低的用户运行
-
-使用以上设置后需要将以下目录和文件的权限分配给www用户
-
-chown -R www:www ./Applications/Crontab/forbidden_dir/
-
-chown -R www:www ./Applications/Crontab/lock_dir/
-
-chown -R www:www ./Applications/Crontab/log_dir/
-
-chown -R www:www ./Applications/Crontab/pid_dir/
-
-chown -R www:www ./Applications/Crontab/run_dir/
-
-chown -R www:www ./Applications/test.txt
-
-./Applications/Crontab/cron_dir/ 该目录权限www用户只读不可写
-
-linux下添加开机自启动需要指定php绝对路径和启动脚本绝对路径,例如
-
-/usr/local/php/bin/php /www/workerman-crontab/start.php start -d
-
-当使用开机自启动时需要注意所有crontab命令和文件需使用绝对路径, 例如
-
-\* * * * * /usr/local/php/bin/php /www/test.php
-
-## 移植
-### windows到Linux（需要Linux的Workerman版本3.1.0及以上）
-可以直接将Applications下的应用目录拷贝到Linux版本的Applications下直接运行
 
 ### Windows到Linux
 拷贝Crontab到官方Applications/目录下即可
